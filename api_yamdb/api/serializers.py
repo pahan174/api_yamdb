@@ -1,10 +1,12 @@
+
 from pyexpat import model
 from attr import fields
 from reviews.models import Genre, Category, Titles
+
 from rest_framework import serializers
 
 from users.models import CustomUser
-from reviews.models import Review, Comment
+from reviews.models import Review
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -14,17 +16,11 @@ class CustomUserSerializer(serializers.ModelSerializer):
         ref_name = 'ReadOnlyUsers'
 
 
-class CommentSerializer(serializers.ModelSerializer):
+class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username'
     )
-
-    class Meta:
-        fields = '__all__'
-        model = Comment
-
-
-class ReviewSerializer(serializers.ModelSerializer):
+    title_id = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         fields = '__all__'
