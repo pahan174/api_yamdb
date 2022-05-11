@@ -1,3 +1,8 @@
+
+from pyexpat import model
+from attr import fields
+from reviews.models import Genre, Category, Titles
+
 from rest_framework import serializers
 
 from users.models import CustomUser
@@ -20,3 +25,24 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Review
+
+
+class GenreSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        fields = '__all__'
+        model = Genre
+
+
+class CategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        fields = '__all__'
+        model = Category
+
+
+class TitlesSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        fields = '__all__'
+        model = Titles
