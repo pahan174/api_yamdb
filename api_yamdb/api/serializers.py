@@ -46,3 +46,8 @@ class TitlesSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Titles
+
+
+class CommentSerializer(serializers.ModelSerializer):
+
+    pass
