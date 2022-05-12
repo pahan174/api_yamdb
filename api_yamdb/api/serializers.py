@@ -5,7 +5,7 @@ from rest_framework import serializers
 
 from reviews.models import Genre, Category, Titles
 from users.models import CustomUser
-from reviews.models import Review
+from reviews.models import Review, Comment
 
 
 class SignUserSerializer(serializers.ModelSerializer):
@@ -84,10 +84,13 @@ class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username'
     )
-    title_id = serializers.PrimaryKeyRelatedField(read_only=True)
+    # title_id = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    score = serializers.IntegerField(max_value=10, min_value=1)
 
     class Meta:
-        fields = '__all__'
+        # fields = '__all__'
+        fields = ('id', 'score', 'author', 'text', 'pub_date') 
         model = Review
 
 
@@ -113,5 +116,11 @@ class TitlesSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        read_only=True, slug_field='username'
+        )
 
-    pass
+    class Meta:
+        # fields = '__all__'
+        fields = ('id', 'author', 'text', 'pub_date') 
+        model = Comment

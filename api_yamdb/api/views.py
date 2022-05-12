@@ -15,6 +15,7 @@ from .serializers import (CategorySerializer, CommentSerializer,
                           LoginSerializer, ReviewSerializer, 
                           SignUserSerializer, TitlesSerializer
                          )
+from .permissions import OwnerOrReadOnly
 
 
 class CustomUserViewSet(viewsets.ModelViewSet):
@@ -103,6 +104,7 @@ class TitlesViewSet(viewsets.ModelViewSet):
 
 
 class ReviewsViewSet(viewsets.ModelViewSet):
+    permission_classes = (OwnerOrReadOnly, )
     serializer_class = ReviewSerializer
 
     def get_queryset(self):
@@ -116,6 +118,26 @@ class ReviewsViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, title_id=None, pk=None):
         review = get_object_or_404(Review, id=pk)
-        # self.check_object_permissions(self.request, comment)
+        self.check_object_permissions(self.request, review)
         review.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    permission_classes = (OwnerOrReadOnly, )
+    serializer_class = CommentSerializer
+
+    def get_queryset(self):
+        review_id = self.kwargs.get("review_id")
+        new_queryset = Comment.objects.filter(review_id=review_id)
+        return new_queryset
+
+    def perform_create(self, serializer):
+        review = get_object_or_404(Comment, pk=self.kwargs.get('review_id'))
+        serializer.save(author=self.request.user, review_id=review)
+
+    def destroy(self, request, title_id=None, pk=None):
+        comment = get_object_or_404(Comment, id=pk)
+        self.check_object_permissions(self.request, comment)
+        comment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
