@@ -1,8 +1,9 @@
+
 from multiprocessing import AuthenticationError
+from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-
 from rest_framework import status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
@@ -10,13 +11,17 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 
+
 from reviews.models import Category, Comment, Genre, Review, Titles
 from users.models import CustomUser
 from .serializers import (CategorySerializer, CommentSerializer,
                           CreateUserSerializer, GenreSerializer,
                           LoginSerializer, ReviewSerializer,
                           SignUserSerializer, TitlesSerializer
-                          )
+
+                          
+from .permissions import OwnerOrReadOnly
+
 
 
 class CustomUserViewSet(viewsets.ModelViewSet):
@@ -74,18 +79,13 @@ def signup(request):
 def token_login(request):
     serializer = LoginSerializer(data=request.data)
     if serializer.is_valid():
+        confirmation_code = serializer.validated_data.get('confirmation_code')
         username = serializer.validated_data.get('username')
-        password = serializer.validated_data.get('confirmation_code')
-        user = get_object_or_404(
-            CustomUser,
-            username=username,
-            confirmation_code=password
-        )
-        refresh = RefreshToken.for_user(user)
-        if default_token_generator.check_token(user, password):
-            return Response(data=str(str(refresh.access_token)),
+        user = CustomUser.objects.get(username=username)
+        token = RefreshToken.for_user(user)
+        if user.confirmation_code == confirmation_code:
+            return Response({'access': str(token.access_token)},
                             status=status.HTTP_200_OK)
-        raise ValueError('Код подтверждения не соответствует.')
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -112,6 +112,7 @@ class TitlesViewSet(viewsets.ModelViewSet):
 
 
 class ReviewsViewSet(viewsets.ModelViewSet):
+    permission_classes = (OwnerOrReadOnly, )
     serializer_class = ReviewSerializer
 
     def get_queryset(self):
@@ -125,6 +126,26 @@ class ReviewsViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, title_id=None, pk=None):
         review = get_object_or_404(Review, id=pk)
-        # self.check_object_permissions(self.request, comment)
+        self.check_object_permissions(self.request, review)
         review.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    permission_classes = (OwnerOrReadOnly, )
+    serializer_class = CommentSerializer
+
+    def get_queryset(self):
+        review_id = self.kwargs.get("review_id")
+        new_queryset = Comment.objects.filter(review_id=review_id)
+        return new_queryset
+
+    def perform_create(self, serializer):
+        review = get_object_or_404(Comment, pk=self.kwargs.get('review_id'))
+        serializer.save(author=self.request.user, review_id=review)
+
+    def destroy(self, request, title_id=None, pk=None):
+        comment = get_object_or_404(Comment, id=pk)
+        self.check_object_permissions(self.request, comment)
+        comment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

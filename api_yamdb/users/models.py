@@ -2,10 +2,6 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
-USER = 'user'
-ADMIN = 'admin'
-MODERATOR = 'moderator'
-
 ROLE = (
     ('user', 'Пользователь'),
     ('moderator', 'Модератор'),
@@ -14,6 +10,11 @@ ROLE = (
 
 
 class CustomUser(AbstractUser):
+
+    USER = 'user'
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
+
     username = models.CharField('Логин', max_length=150, unique=True)
     email = models.EmailField('Электронная почта', max_length=254, unique=True)
     first_name = models.CharField('Имя', max_length=150, blank=True)
@@ -22,5 +23,27 @@ class CustomUser(AbstractUser):
     role = models.CharField('Роль', max_length=9, choices=ROLE, default=USER)
     confirmation_code = models.CharField('Токен', max_length=254, blank=True)
 
+    USERNAME_FIELD = 'username'
+
     def __str__(self):
         return self.username
+
+    def save(self, *args, **kwargs):
+        if self.is_superuser:
+            self.role = self.ADMIN
+
+        if self.role == self.ADMIN:
+            self.is_staff = True
+        else:
+            self.is_staff = False
+        super(CustomUser, self).save(*args, **kwargs)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['username', 'email'],
+                name='unique_username_email'
+            )
+        ]
+
+
