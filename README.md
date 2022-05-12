@@ -96,7 +96,3 @@ http://127.0.0.1:8000/api/v1/posts/1/comments/
 POST-запрос
 http://127.0.0.1:8000/api/v1/jwt/create/
 ```
-
-
-
-
