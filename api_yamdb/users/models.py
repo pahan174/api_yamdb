@@ -14,10 +14,10 @@ ROLE = (
 
 
 class CustomUser(AbstractUser):
-    username = models.CharField('Логин', max_length=155, unique=True)
-    email = models.EmailField('Электронная почта', max_length=200, unique=True)
-    first_name = models.CharField('Имя', max_length=155, blank=True)
-    last_name = models.CharField('Фамилия', max_length=155, blank=True)
+    username = models.CharField('Логин', max_length=150, unique=True)
+    email = models.EmailField('Электронная почта', max_length=254, unique=True)
+    first_name = models.CharField('Имя', max_length=150, blank=True)
+    last_name = models.CharField('Фамилия', max_length=150, blank=True)
     bio = models.TextField('Биография', blank=True)
     role = models.CharField('Роль', max_length=9, choices=ROLE, default=USER)
     confirmation_code = models.CharField('Токен', max_length=254, blank=True)

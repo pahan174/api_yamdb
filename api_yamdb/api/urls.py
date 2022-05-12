@@ -1,6 +1,7 @@
 from django.urls import include, path
 from rest_framework import routers
 
+from . import views
 from .views import CustomUserViewSet
 
 
@@ -9,7 +10,6 @@ router.register(r'users', CustomUserViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    # path('signup', views),
-    # path('token/', views)
+    path('auth/signup/', views.signup, name='signup'),
+    path('auth/token/', views.token_login, name='token')
 ]
-
