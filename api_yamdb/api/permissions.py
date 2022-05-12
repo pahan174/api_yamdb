@@ -16,8 +16,9 @@ class OwnerOrReadOnly(permissions.BasePermission):
         return (
             request.method in permissions.SAFE_METHODS
             or obj.author == request.user
+            or obj.author.role in ['moderator', 'admin']
+            )
             or obj.role in ['moderator', 'admin']
-
         )
 
 
@@ -32,4 +33,3 @@ class AdminOrReadOnly(permissions.IsAdminUser):
             request.method in permissions.SAFE_METHODS
             or is_admin
         )
-

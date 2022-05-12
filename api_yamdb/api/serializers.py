@@ -66,7 +66,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     score = serializers.IntegerField(max_value=10, min_value=1)
 
     class Meta:
-        # fields = '__all__'
+        #fields = '__all__'
         fields = ('id', 'score', 'author', 'text', 'pub_date') 
         model = Review
 
