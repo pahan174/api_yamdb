@@ -75,7 +75,7 @@ class GenreSerializer(serializers.ModelSerializer):
     name = serializers.CharField(required=False)
 
     class Meta:
-        fields = '__all__'
+        fields = ('name', 'slug')
         model = Genre
 
 
@@ -83,14 +83,14 @@ class CategorySerializer(serializers.ModelSerializer):
     slug = serializers.RegexField(regex=r'^[-a-zA-Z0-9_]+$', required=True)
 
     class Meta:
-        fields = ('name', 'slug', 'id')
+        fields = ('name', 'slug')
         model = Category
 
 
 class TitlesSerializer(serializers.ModelSerializer):
     description = serializers.CharField(required=False)
     # сделать проверку, что genre и category должны уже быть?
-    genre = GenreSerializer(many=True)
+    #genre = GenreSerializer(many=True)
 
     category = serializers.SlugRelatedField(
         slug_field='slug', queryset=Category.objects.all())
@@ -111,7 +111,7 @@ class TitlesSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username'
-        )
+    )
 
     class Meta:
         # fields = '__all__'
