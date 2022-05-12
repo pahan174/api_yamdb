@@ -18,3 +18,4 @@ class OwnerOrReadOnly(permissions.BasePermission):
                or obj.author == request.user
                or obj.role in ['moderator', 'admin']
                )
+      
