@@ -6,9 +6,16 @@ class Category(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True, max_length=50)
 
+    def __str__(self):
+        return self.name
+
 
 class Genre(models.Model):
+    name = models.CharField(max_length=256, null=True)
     slug = models.SlugField(unique=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Titles(models.Model):
@@ -19,16 +26,16 @@ class Titles(models.Model):
         null=True,
         related_name='titles'
     )
-    genre = models.ForeignKey(
+    genre = models.ManyToManyField(
         Genre,
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True,
         related_name='titles'
     )
     name = models.TextField(default=None)
-    year = models.IntegerField(default=1)
+    year = models.IntegerField(default=2000)
     description = models.TextField(default=None)
+
+    def __str__(self):
+        return self.name
 
 
 class Review(models.Model):
@@ -43,6 +50,9 @@ class Review(models.Model):
         related_name='reviews'
     )
 
+    def __str__(self):
+        return self.text
+
 
 class Comment(models.Model):
     author = models.ForeignKey(
@@ -52,3 +62,6 @@ class Comment(models.Model):
     text = models.TextField()
     pub_date = models.DateTimeField(
         'Дата добавления', auto_now_add=True, db_index=True)
+
+    def __str__(self):
+        return self.text
