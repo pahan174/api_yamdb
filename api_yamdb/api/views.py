@@ -8,9 +8,13 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 
+from reviews.models import Category, Comment, Genre,  Review, Titles
 from users.models import CustomUser
-from .serializers import (CreateUserSerializer,
-                          SignUserSerializer, LoginSerializer)
+from .serializers import (CategorySerializer, CommentSerializer, 
+                          CreateUserSerializer, GenreSerializer,
+                          LoginSerializer, ReviewSerializer, 
+                          SignUserSerializer, TitlesSerializer
+                         )
 
 
 class CustomUserViewSet(viewsets.ModelViewSet):
@@ -75,10 +79,43 @@ def token_login(request):
             username=username,
             confirmation_code=password
         )
-
         refresh = RefreshToken.for_user(user)
         if default_token_generator.check_token(user, password):
             return Response(data=str(str(refresh.access_token)),
                             status=status.HTTP_200_OK)
         raise ValueError('Код подтверждения не соответствует.')
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GenreViewSet(viewsets.ModelViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+    
+class TitlesViewSet(viewsets.ModelViewSet):
+    queryset = Titles.objects.all()
+    serializer_class = TitlesSerializer
+
+
+class ReviewsViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        title_id = self.kwargs.get("title_id")
+        new_queryset = Review.objects.filter(title_id=title_id)
+        return new_queryset
+
+    def perform_create(self, serializer):
+        title = get_object_or_404(Review, pk=self.kwargs.get('title_id'))
+        serializer.save(author=self.request.user, title_id=title)
+
+    def destroy(self, request, title_id=None, pk=None):
+        review = get_object_or_404(Review, id=pk)
+        # self.check_object_permissions(self.request, comment)
+        review.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
