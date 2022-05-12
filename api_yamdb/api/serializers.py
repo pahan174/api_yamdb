@@ -1,3 +1,4 @@
+from typing_extensions import Required
 from django.contrib.auth import authenticate
 from pyexpat import model
 from attr import fields
@@ -79,7 +80,7 @@ class LoginSerializer(serializers.ModelSerializer):
             'confirmation_code': user.confirmation_code
         }
 
-      
+
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username'
@@ -92,6 +93,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class GenreSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(required=False)
 
     class Meta:
         fields = '__all__'
@@ -99,17 +101,32 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    slug = serializers.RegexField(regex=r'^[-a-zA-Z0-9_]+$', required=True)
 
     class Meta:
-        fields = '__all__'
+        fields = ('name', 'slug', 'id')
         model = Category
 
 
 class TitlesSerializer(serializers.ModelSerializer):
+    description = serializers.CharField(required=False)
+    # сделать проверку, что genre и category должны уже быть?
+    genre = GenreSerializer(many=True)
+
+    category = serializers.SlugRelatedField(
+        slug_field='slug', queryset=Category.objects.all())
 
     class Meta:
-        fields = '__all__'
+        fields = ('id', 'category', 'genre', 'name', 'year', 'description')
         model = Titles
+
+    def validate(self, data):
+        name = data.get('name', None)
+
+        if name is None:
+            raise serializers.ValidationError(
+                'Введите имя.'
+            )
 
 
 class CommentSerializer(serializers.ModelSerializer):
