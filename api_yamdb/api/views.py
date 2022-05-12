@@ -9,6 +9,7 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 
 
@@ -17,11 +18,10 @@ from users.models import CustomUser
 from .serializers import (CategorySerializer, CommentSerializer,
                           CreateUserSerializer, GenreSerializer,
                           LoginSerializer, ReviewSerializer,
-                          SignUserSerializer, TitlesSerializer
+                          SignUserSerializer, TitlesSerializer)
 
-                          
-from .permissions import OwnerOrReadOnly
 
+from .permissions import OwnerOrReadOnly, AdminOrReadOnly
 
 
 class CustomUserViewSet(viewsets.ModelViewSet):
@@ -30,28 +30,29 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
     search_fields = ('username',)
 
-    @action(detail=False, methods=['POST', 'PATCH'], name='me')
-    @permission_classes([IsAuthenticated])
-    def get_personal_account(self, request):
-        user = self.request.user
-        if request.method == 'POST':
-            serializer = CreateUserSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
-        if request.method == 'PATCH':
-            serializer = CreateUserSerializer(user, data=request.data,
-                                              partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
+
+@ action(detail=False, methods=['POST', 'PATCH'], name='me')
+@ permission_classes([IsAuthenticated])
+def get_personal_account(self, request):
+    user = self.request.user
+    if request.method == 'POST':
+        serializer = CreateUserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'PATCH':
+        serializer = CreateUserSerializer(user, data=request.data,
+                                          partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
+@ api_view(['POST'])
+@ permission_classes([AllowAny])
 def signup(request):
     serializer = SignUserSerializer(data=request.data)
     if serializer.is_valid():
@@ -74,8 +75,8 @@ def signup(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
+@ api_view(['POST'])
+@ permission_classes([AllowAny])
 def token_login(request):
     serializer = LoginSerializer(data=request.data)
     if serializer.is_valid():
@@ -92,21 +93,24 @@ def token_login(request):
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (IsAdminUser,)
+    permission_classes = (AdminOrReadOnly,)
+    #pagination_classes = PageNumberPagination
+    lookup_field = 'slug'
     search_fields = ('slug',)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (IsAdminUser,)
+    permission_classes = (AdminOrReadOnly,)
+    lookup_field = 'slug'
     search_fields = ('slug',)
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Titles.objects.all()
     serializer_class = TitlesSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (AdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('genre__slug', 'category__slug', 'name', 'year')
 
