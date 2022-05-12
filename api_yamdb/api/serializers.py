@@ -41,14 +41,19 @@ class CreateUserSerializer(serializers.ModelSerializer):
 
 
 class LoginSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(read_only=True)
-    token = serializers.SerializerMethodField()
+    username = serializers.CharField()
+    token = serializers.StringRelatedField()
 
     class Meta:
         model = CustomUser
         fields = (
             'username', 'confirmation_code', 'token'
         )
+
+    def validate(self, attrs):
+        if not attrs.get('username'):
+            raise ValueError('Введите имя пользователя.')
+        return attrs
 
 
 class ReviewSerializer(serializers.ModelSerializer):

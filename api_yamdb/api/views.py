@@ -76,9 +76,9 @@ def token_login(request):
     if serializer.is_valid():
         confirmation_code = serializer.validated_data.get('confirmation_code')
         username = serializer.validated_data.get('username')
-        token = RefreshToken.for_user(username)
-        # print(confirmation_code, username, str(token.access_token))
-        if default_token_generator.check_token(username, confirmation_code):
+        user = CustomUser.objects.get(username=username)
+        token = RefreshToken.for_user(user)
+        if user.confirmation_code == confirmation_code:
             return Response({'access': str(token.access_token)},
                             status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
