@@ -20,7 +20,8 @@ from users.models import CustomUser
 from .serializers import (CategorySerializer, CommentSerializer,
                           CreateUserSerializer, GenreSerializer,
                           LoginSerializer, ReviewSerializer,
-                          SignUserSerializer, TitleDetailSerializer, TitlesSerializer)
+                          SignUserSerializer, TitleDetailSerializer,
+                          TitlesSerializer, GetPersonalAccountSerializers)
 
 
 from .permissions import OwnerOrReadOnly, AdminOrReadOnly
@@ -33,24 +34,20 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     search_fields = ('username',)
 
 
-@ action(detail=False, methods=['POST', 'PATCH'], name='me')
-@ permission_classes([IsAuthenticated])
+@api_view(['GET', 'PATCH'])
+@permission_classes([IsAuthenticated])
 def get_personal_account(self, request):
     user = self.request.user
-    if request.method == 'POST':
-        serializer = CreateUserSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
     if request.method == 'PATCH':
-        serializer = CreateUserSerializer(user, data=request.data,
-                                          partial=True)
+        serializer = GetPersonalAccountSerializers(user, data=request.data,
+                                                   partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors,
                         status=status.HTTP_400_BAD_REQUEST)
+    serializer = GetPersonalAccountSerializers(data=request.data)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @ api_view(['POST'])
