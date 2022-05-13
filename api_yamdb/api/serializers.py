@@ -4,6 +4,7 @@ from pyexpat import model
 from attr import fields
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.validators import UniqueTogetherValidator
 
 from reviews.models import Genre, Category, Titles
 from users.models import CustomUser
@@ -92,6 +93,11 @@ class TitlesSerializer(serializers.ModelSerializer):
     # сделать проверку, что genre и category должны уже быть?
     #genre = GenreSerializer(many=True)
 
+    genre = serializers.SlugRelatedField(
+        queryset=Genre.objects.all(),
+        slug_field='slug', many=True
+    )
+
     category = serializers.SlugRelatedField(
         slug_field='slug', queryset=Category.objects.all())
 
@@ -106,6 +112,7 @@ class TitlesSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Введите имя.'
             )
+        return data
 
 
 class CommentSerializer(serializers.ModelSerializer):
