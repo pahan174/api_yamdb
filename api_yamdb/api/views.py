@@ -6,10 +6,12 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
+from rest_framework.permissions import (AllowAny, IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly,
+                                        IsAdminUser)
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
-from rest_framework.pagination import PageNumberPagination
+from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from rest_framework import mixins
@@ -33,21 +35,36 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
     search_fields = ('username',)
 
+    @action(detail=False, methods=['GET', 'PATCH'], name='me')
+    @permission_classes([IsAuthenticated])
+    def get_personal_account(self, request):
+        user = self.request.user
+        if request.method == 'PATCH':
+            serializer = GetPersonalAccountSerializers(user, data=request.data,
+                                                       partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
+        serializer = GetPersonalAccountSerializers(data=request.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-@api_view(['GET', 'PATCH'])
-@permission_classes([IsAuthenticated])
-def get_personal_account(self, request):
-    user = self.request.user
-    if request.method == 'PATCH':
-        serializer = GetPersonalAccountSerializers(user, data=request.data,
-                                                   partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors,
-                        status=status.HTTP_400_BAD_REQUEST)
-    serializer = GetPersonalAccountSerializers(data=request.data)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+
+class GetPatchViewsSet(mixins.ListModelMixin, mixins.UpdateModelMixin,
+                       viewsets.GenericViewSet):
+    pass
+
+
+class MeViewSetGet(GetPatchViewsSet):
+    permission_classes = (AllowAny,)
+    serializer_class = GetPersonalAccountSerializers
+    pagination_class = None
+
+    def get_queryset(self):
+        user_id = self.request.user.id
+        new_queryset = CustomUser.objects.filter(id=user_id)
+        return new_queryset
 
 
 @ api_view(['POST'])
@@ -78,18 +95,19 @@ def signup(request):
 @ permission_classes([AllowAny])
 def token_login(request):
     serializer = LoginSerializer(data=request.data)
-    if serializer.is_valid():
-        confirmation_code = serializer.validated_data.get('confirmation_code')
-        username = serializer.validated_data.get('username')
-        user = CustomUser.objects.get(username=username)
-        token = RefreshToken.for_user(user)
-        if user.confirmation_code == confirmation_code:
-            return Response({'access': str(token.access_token)},
-                            status=status.HTTP_200_OK)
+    serializer.is_valid(raise_exception=True)
+    confirmation_code = request.data['confirmation_code']
+    user = get_object_or_404(CustomUser, username=request.data['username'])
+    token = RefreshToken.for_user(user)
+    if user.confirmation_code == confirmation_code:
+        return Response({'access': str(token.access_token)},
+                        status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class CreateListDestroyViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class CreateListDestroyViewSet(
+    mixins.CreateModelMixin, mixins.ListModelMixin,
+    mixins.DestroyModelMixin, viewsets.GenericViewSet):
     pass
 
 

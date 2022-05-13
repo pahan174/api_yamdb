@@ -34,13 +34,6 @@ class CreateUserSerializer(serializers.ModelSerializer):
             'username', 'email', 'first_name', 'last_name', 'bio', 'role'
         )
 
-    def validate(self, attrs):
-        if attrs.get('username') == 'me':
-            raise serializers.ValidationError(
-                'Имя пользователя "me" использовать нельзя.'
-            )
-        return attrs
-
 
 class GetPersonalAccountSerializers(serializers.ModelSerializer):
     username = serializers.StringRelatedField()
@@ -109,12 +102,6 @@ class TitlesSerializer(serializers.ModelSerializer):
     description = serializers.CharField(required=False)
     genre = serializers.SlugRelatedField(
         many=True, slug_field='slug', queryset=Genre.objects.all())
-
-    genre = serializers.SlugRelatedField(
-        queryset=Genre.objects.all(),
-        slug_field='slug', many=True
-    )
-
     category = serializers.SlugRelatedField(
         slug_field='slug', queryset=Category.objects.all())
 
