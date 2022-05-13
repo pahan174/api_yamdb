@@ -68,7 +68,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         #fields = '__all__'
-        fields = ('id', 'score', 'author', 'text', 'pub_date') 
+        fields = ('id', 'score', 'author', 'text', 'pub_date')
         model = Review
 
 
@@ -90,8 +90,8 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class TitlesSerializer(serializers.ModelSerializer):
     description = serializers.CharField(required=False)
-    # сделать проверку, что genre и category должны уже быть?
-    #genre = GenreSerializer(many=True)
+    genre = serializers.SlugRelatedField(
+        many=True, slug_field='slug', queryset=Genre.objects.all())
 
     genre = serializers.SlugRelatedField(
         queryset=Genre.objects.all(),
@@ -114,7 +114,19 @@ class TitlesSerializer(serializers.ModelSerializer):
             )
         return data
 
+      
+class TitleDetailSerializer(serializers.ModelSerializer):
+    description = serializers.CharField(required=False)
+    genre = serializers.SlugRelatedField(
+        many=True, slug_field='slug', queryset=Genre.objects.all())
 
+    category = CategorySerializer(read_only=True)
+
+    class Meta:
+        fields = ('id', 'category', 'genre', 'name', 'year', 'description')
+        model = Titles
+
+        
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username'
@@ -122,5 +134,5 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         # fields = '__all__'
-        fields = ('id', 'author', 'text', 'pub_date') 
+        fields = ('id', 'author', 'text', 'pub_date')
         model = Comment

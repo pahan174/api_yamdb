@@ -21,11 +21,8 @@ class OwnerOrReadOnly(permissions.BasePermission):
             )
 
 
-class AdminOrReadOnly(permissions.IsAdminUser):
-    """
-    Custom permission to only allow owners of an object to edit it.
-    """
 
+class AdminOrReadOnly(permissions.IsAdminUser):
     def has_permission(self, request, view):
         is_admin = super().has_permission(request, view)
         return (
