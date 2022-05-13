@@ -121,8 +121,8 @@ class TitlesSerializer(serializers.ModelSerializer):
       
 class TitleDetailSerializer(serializers.ModelSerializer):
     description = serializers.CharField(required=False)
-    genre = serializers.SlugRelatedField(
-        many=True, slug_field='slug', queryset=Genre.objects.all())
+    genre = GenreSerializer(
+        many=True, read_only=True)
 
     category = CategorySerializer(read_only=True)
 

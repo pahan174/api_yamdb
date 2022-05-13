@@ -133,12 +133,12 @@ class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Titles.objects.all()
     serializer_class = TitleDetailSerializer
     permission_classes = (AdminOrReadOnly,)
-    pagination_classes = LimitOffsetPagination
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    search_fields = ('genre__slug',)
     filterset_fields = ('genre__slug', 'category__slug', 'name', 'year')
 
     def get_serializer_class(self):
-        if self.action == 'retrieve':
+        if self.action == 'retrieve' or self.action == 'list':
             return TitleDetailSerializer
         return TitlesSerializer
 
