@@ -11,6 +11,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
+from rest_framework import mixins
 
 
 from reviews.models import Category, Comment, Genre, Review, Titles
@@ -18,8 +20,7 @@ from users.models import CustomUser
 from .serializers import (CategorySerializer, CommentSerializer,
                           CreateUserSerializer, GenreSerializer,
                           LoginSerializer, ReviewSerializer,
-                          SignUserSerializer, TitlesSerializer)
-
+                          SignUserSerializer, TitleDetailSerializer, TitlesSerializer)
 
 
 from .permissions import OwnerOrReadOnly, AdminOrReadOnly
@@ -91,16 +92,21 @@ def token_login(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class GenreViewSet(viewsets.ModelViewSet):
+class CreateListDestroyViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    pass
+
+
+class GenreViewSet(CreateListDestroyViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (AdminOrReadOnly,)
     #pagination_classes = PageNumberPagination
     lookup_field = 'slug'
-    search_fields = ('slug',)
+    search_fields = ('name',)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class CategoryViewSet(CreateListDestroyViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (AdminOrReadOnly,)
@@ -110,10 +116,15 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Titles.objects.all()
-    serializer_class = TitlesSerializer
+    serializer_class = TitleDetailSerializer
     permission_classes = (AdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('genre__slug', 'category__slug', 'name', 'year')
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return TitleDetailSerializer
+        return TitlesSerializer
 
 
 class ReviewsViewSet(viewsets.ModelViewSet):
