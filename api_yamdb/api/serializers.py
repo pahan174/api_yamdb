@@ -4,6 +4,7 @@ from pyexpat import model
 from attr import fields
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.validators import UniqueTogetherValidator
 
 from reviews.models import Genre, Category, Titles
 from users.models import CustomUser
@@ -92,6 +93,11 @@ class TitlesSerializer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(
         many=True, slug_field='slug', queryset=Genre.objects.all())
 
+    genre = serializers.SlugRelatedField(
+        queryset=Genre.objects.all(),
+        slug_field='slug', many=True
+    )
+
     category = serializers.SlugRelatedField(
         slug_field='slug', queryset=Category.objects.all())
 
@@ -108,6 +114,7 @@ class TitlesSerializer(serializers.ModelSerializer):
             )
         return data
 
+      
 class TitleDetailSerializer(serializers.ModelSerializer):
     description = serializers.CharField(required=False)
     genre = serializers.SlugRelatedField(
@@ -119,8 +126,7 @@ class TitleDetailSerializer(serializers.ModelSerializer):
         fields = ('id', 'category', 'genre', 'name', 'year', 'description')
         model = Titles
 
-
-
+        
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username'
