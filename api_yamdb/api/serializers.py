@@ -42,6 +42,23 @@ class CreateUserSerializer(serializers.ModelSerializer):
         return attrs
 
 
+class GetPersonalAccountSerializers(serializers.ModelSerializer):
+    username = serializers.StringRelatedField()
+    email = serializers.EmailField(read_only=True)
+
+    class Meta:
+        model = CustomUser
+        fields = (
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
+        )
+
+    def validate(self, attrs):
+        instance = getattr(self, 'instance', None)
+        if instance.role != CustomUser.ADMIN:
+            attrs['role'] = instance.role
+        return attrs
+
+
 class LoginSerializer(serializers.ModelSerializer):
     username = serializers.CharField()
     token = serializers.StringRelatedField()

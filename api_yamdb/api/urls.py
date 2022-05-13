@@ -21,6 +21,7 @@ router.register(r'^titles/(\d+)/reviews/(?P<review_id>\d+)/comments',
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('users/me/', views.get_personal_account, name='me'),
     path('auth/signup/', views.signup, name='signup'),
     path('auth/token/', views.token_login, name='token')
 ]
