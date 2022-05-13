@@ -1,3 +1,4 @@
+from django.db.models import Avg
 from typing_extensions import Required
 from django.contrib.auth import authenticate
 from pyexpat import model

@@ -175,9 +175,3 @@ class CommentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
         serializer.save(author=self.request.user, review_id=review)
-
-    def destroy(self, request, title_id=None, pk=None):
-        comment = get_object_or_404(Comment, id=pk)
-        self.check_object_permissions(self.request, comment)
-        comment.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
