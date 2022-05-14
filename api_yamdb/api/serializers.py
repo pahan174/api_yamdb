@@ -5,6 +5,7 @@ from django.db.models import Avg
 from typing_extensions import Required
 from django.contrib.auth import authenticate
 from pyexpat import model
+from django.shortcuts import get_object_or_404
 from attr import attr, fields
 from rest_framework import serializers
 # from rest_framework_simplejwt.tokens import RefreshToken
@@ -106,8 +107,9 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    # slug = serializers.RegexField(regex=r'^[-a-zA-Z0-9_]+$', required=True)
+
     slug = serializers.SlugField(validators=[UniqueValidator(queryset=Category.objects.all())])
+
 
     class Meta:
         fields = ('name', 'slug')

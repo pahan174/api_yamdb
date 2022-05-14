@@ -39,6 +39,7 @@ class CustomUser(AbstractUser):
         super(CustomUser, self).save(*args, **kwargs)
 
     class Meta:
+        ordering = ('username',)
         constraints = [
             models.UniqueConstraint(
                 fields=['username', 'email'],
