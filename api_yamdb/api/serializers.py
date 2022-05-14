@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate
 from pyexpat import model
 from attr import fields
 from rest_framework import serializers
-from rest_framework_simplejwt.tokens import RefreshToken
+# from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.validators import UniqueTogetherValidator
 
 from reviews.models import Genre, Category, Titles
@@ -119,6 +119,8 @@ class TitlesSerializer(serializers.ModelSerializer):
             )
         return data
 
+
+
       
 class TitleDetailSerializer(serializers.ModelSerializer):
     description = serializers.CharField(required=False)
@@ -126,10 +128,17 @@ class TitleDetailSerializer(serializers.ModelSerializer):
         many=True, read_only=True)
 
     category = CategorySerializer(read_only=True)
+    rating = serializers.SerializerMethodField()
 
     class Meta:
-        fields = ('id', 'category', 'genre', 'name', 'year', 'description')
+        fields = ('id', 'category', 'genre', 'name', 'year', 'description', 'rating')
         model = Titles
+
+    def get_rating(self, obj):
+        rating = Review.objects.filter(title=obj.id).aggregate(Avg('score'))
+        if rating['score__avg'] != None:
+            return int(rating['score__avg'])
+        return 'Нет оценок'
 
         
 class CommentSerializer(serializers.ModelSerializer):
