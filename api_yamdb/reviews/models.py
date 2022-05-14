@@ -44,7 +44,7 @@ class Review(models.Model):
         CustomUser, on_delete=models.CASCADE, related_name='reviews')
     score = models.IntegerField()
     pub_date = models.DateTimeField(auto_now_add=True)
-    title_id = models.ForeignKey(
+    title = models.ForeignKey(
         Titles,
         on_delete=models.CASCADE,
         related_name='reviews'
@@ -53,7 +53,7 @@ class Review(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['author', 'title_id'],
+                fields=['author', 'title'],
                 name='unique_author_review'
             )
         ]
