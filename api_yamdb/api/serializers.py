@@ -119,8 +119,6 @@ class TitlesSerializer(serializers.ModelSerializer):
             )
         return data
 
-
-
       
 class TitleDetailSerializer(serializers.ModelSerializer):
     description = serializers.CharField(required=False)
