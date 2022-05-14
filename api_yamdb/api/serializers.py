@@ -1,8 +1,11 @@
+from asyncore import read
+from email.policy import default
+from wsgiref.validate import validator
 from django.db.models import Avg
 from typing_extensions import Required
 from django.contrib.auth import authenticate
 from pyexpat import model
-from attr import fields
+from attr import attr, fields
 from rest_framework import serializers
 # from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.validators import UniqueTogetherValidator
@@ -10,6 +13,7 @@ from rest_framework.validators import UniqueTogetherValidator
 from reviews.models import Genre, Category, Titles
 from users.models import CustomUser
 from reviews.models import Review, Comment
+from rest_framework.validators import UniqueValidator
 
 
 class SignUserSerializer(serializers.ModelSerializer):
@@ -71,16 +75,26 @@ class LoginSerializer(serializers.ModelSerializer):
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
-        read_only=True, slug_field='username'
+        read_only=True, slug_field='username', default=serializers.CurrentUserDefault()
     )
-    # title_id = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    # title = serializers.HiddenField(default=1)
 
     score = serializers.IntegerField(max_value=10, min_value=1)
 
     class Meta:
-        #fields = '__all__'
         fields = ('id', 'score', 'author', 'text', 'pub_date')
         model = Review
+        # fields = '__all__'        
+
+        # validators = [
+        #     UniqueTogetherValidator(
+        #         queryset=Review.objects.all(),
+        #         fields=['author', 'title'],
+        #         message='Автор может оставить только один отзыв на произведение'
+        #     )
+        # ]
+
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -92,7 +106,8 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    slug = serializers.RegexField(regex=r'^[-a-zA-Z0-9_]+$', required=True)
+    # slug = serializers.RegexField(regex=r'^[-a-zA-Z0-9_]+$', required=True)
+    slug = serializers.SlugField(validators=[UniqueValidator(queryset=Category.objects.all())])
 
     class Meta:
         fields = ('name', 'slug')

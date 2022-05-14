@@ -1,4 +1,4 @@
-
+  
 from multiprocessing import AuthenticationError
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
@@ -27,6 +27,7 @@ from .serializers import (CategorySerializer, CommentSerializer,
 
 
 from .permissions import OwnerOrReadOnly, AdminOrReadOnly, IsAuthorOrModerOrAdmin
+from .filters import TitlesFilter
 
 
 class CustomUserViewSet(viewsets.ModelViewSet):
@@ -113,16 +114,18 @@ class CategoryViewSet(CreateListDestroyViewSet):
     serializer_class = CategorySerializer
     permission_classes = (AdminOrReadOnly,)
     lookup_field = 'slug'
-    search_fields = ('slug',)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    search_fields = ('name',)
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Titles.objects.all()
     serializer_class = TitleDetailSerializer
     permission_classes = (AdminOrReadOnly,)
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
-    search_fields = ('genre__slug',)
-    filterset_fields = ('genre__slug', 'category__slug', 'name', 'year')
+    filter_backends = (filters.SearchFilter, DjangoFilterBackend, )
+    search_fields = ('name', 'genre__slug', 'category__slug', )
+    # filterset_fields = ('year', 'name', )
+    filter_class = TitlesFilter
 
     def get_serializer_class(self):
         if self.action == 'retrieve' or self.action == 'list':
@@ -141,7 +144,9 @@ class ReviewsViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         title = get_object_or_404(Titles, pk=self.kwargs.get('title_id'))
+        # if Review.objects.filter(author=self.request.user, title=title).first() == None:
         serializer.save(author=self.request.user, title=title)
+        # return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, title_id=None, pk=None):
         review = get_object_or_404(Review, id=pk)
