@@ -138,7 +138,7 @@ class TitleDetailSerializer(serializers.ModelSerializer):
         rating = Review.objects.filter(title=obj.id).aggregate(Avg('score'))
         if rating['score__avg'] != None:
             return int(rating['score__avg'])
-        return 'Нет оценок'
+        return None
 
         
 class CommentSerializer(serializers.ModelSerializer):
