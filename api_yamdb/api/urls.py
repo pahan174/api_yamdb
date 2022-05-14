@@ -9,17 +9,16 @@ from .views import (CategoryViewSet, CustomUserViewSet,
 
 router = routers.DefaultRouter()
 router.register(r'users', CustomUserViewSet)
-router.register(r'genres', GenreViewSet)
+router.register(r'genres', GenreViewSet, basename='genres')
 router.register(r'titles', TitlesViewSet)
 router.register(r'categories', CategoryViewSet)
 
 router.register(r'^titles/(?P<title_id>\d+)/reviews',
                 ReviewsViewSet, basename='reviews_url')
 
-router.register(r'^titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
-                CommentViewSet, basename='comments_url'
-                )
-
+router.register(
+    r'^titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
+    CommentViewSet, basename='comments_url')
 
 urlpatterns = [
     path('users/me/', views.get_personal_account, name='me'),

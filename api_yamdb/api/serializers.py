@@ -3,6 +3,7 @@ from typing_extensions import Required
 from django.contrib.auth import authenticate
 from pyexpat import model
 from attr import fields
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 # from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.validators import UniqueTogetherValidator
@@ -73,8 +74,6 @@ class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username'
     )
-    # title_id = serializers.PrimaryKeyRelatedField(read_only=True)
-
     score = serializers.IntegerField(max_value=10, min_value=1)
 
     class Meta:
@@ -92,7 +91,6 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    slug = serializers.RegexField(regex=r'^[-a-zA-Z0-9_]+$', required=True)
 
     class Meta:
         fields = ('name', 'slug')
