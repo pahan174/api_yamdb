@@ -35,10 +35,13 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
     search_fields = ('username',)
 
-    @action(detail=False, methods=['GET', 'PATCH'], name='me')
-    @permission_classes([IsAuthenticated])
-    def get_personal_account(self, request):
-        user = self.request.user
+
+@ api_view(['GET', 'PATCH'])
+@ permission_classes([IsAuthenticated])
+def get_personal_account(request):
+    user_id = request.user.pk
+    user = CustomUser.objects.get(id=user_id)
+    if request.method == 'PATCH':
         if request.method == 'PATCH':
             serializer = GetPersonalAccountSerializers(user, data=request.data,
                                                        partial=True)
@@ -47,24 +50,8 @@ class CustomUserViewSet(viewsets.ModelViewSet):
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
-        serializer = GetPersonalAccountSerializers(data=request.data)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class GetPatchViewsSet(mixins.ListModelMixin, mixins.UpdateModelMixin,
-                       viewsets.GenericViewSet):
-    pass
-
-
-class MeViewSetGet(GetPatchViewsSet):
-    permission_classes = (AllowAny,)
-    serializer_class = GetPersonalAccountSerializers
-    pagination_class = None
-
-    def get_queryset(self):
-        user_id = self.request.user.id
-        new_queryset = CustomUser.objects.filter(id=user_id)
-        return new_queryset
+    serializer = GetPersonalAccountSerializers(user)
+    return Response(serializer.data)
 
 
 @ api_view(['POST'])

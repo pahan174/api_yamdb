@@ -3,7 +3,7 @@ from rest_framework import routers
 
 from . import views
 from .views import (CategoryViewSet, CustomUserViewSet,
-                    GenreViewSet, MeViewSetGet, ReviewsViewSet,
+                    GenreViewSet, ReviewsViewSet,
                     TitlesViewSet, CommentViewSet)
 
 
@@ -19,9 +19,10 @@ router.register(r'^titles/(?P<title_id>\d+)/reviews',
 router.register(r'^titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
                 CommentViewSet, basename='comments_url'
                 )
-router.register(r'users/me', MeViewSetGet, basename='me')
+
 
 urlpatterns = [
+    path('users/me/', views.get_personal_account, name='me'),
     path('', include(router.urls)),
     path('auth/signup/', views.signup, name='signup'),
     path('auth/token/', views.token_login, name='token')

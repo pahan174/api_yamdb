@@ -23,3 +23,6 @@ class AdminOrReadOnly(permissions.IsAdminUser):
             request.method in permissions.SAFE_METHODS
             or is_admin
         )
+
+# class AllowAnyOrAdmin(permissions.BasePermission):
+#
