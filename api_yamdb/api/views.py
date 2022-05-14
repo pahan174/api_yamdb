@@ -26,7 +26,7 @@ from .serializers import (CategorySerializer, CommentSerializer,
                           TitlesSerializer, GetPersonalAccountSerializers)
 
 
-from .permissions import OwnerOrReadOnly, AdminOrReadOnly
+from .permissions import OwnerOrReadOnly, AdminOrReadOnly, IsAuthorOrModerOrAdmin
 
 
 class CustomUserViewSet(viewsets.ModelViewSet):
@@ -131,7 +131,7 @@ class TitlesViewSet(viewsets.ModelViewSet):
 
 
 class ReviewsViewSet(viewsets.ModelViewSet):
-    permission_classes = (OwnerOrReadOnly, )
+    permission_classes = (IsAuthorOrModerOrAdmin, )
     serializer_class = ReviewSerializer
 
     def get_queryset(self):
@@ -151,7 +151,7 @@ class ReviewsViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    permission_classes = (OwnerOrReadOnly, )
+    permission_classes = (IsAuthorOrModerOrAdmin, )
     serializer_class = CommentSerializer
 
     def get_queryset(self):

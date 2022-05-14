@@ -4,14 +4,14 @@ from users.models import CustomUser
 
 class Category(models.Model):
     name = models.CharField(max_length=256)
-    slug = models.SlugField(unique=True, max_length=50)
+    slug = models.SlugField(max_length=50, unique=True)
 
     def __str__(self):
         return self.name
 
 
 class Genre(models.Model):
-    name = models.CharField(max_length=256, null=True)
+    name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True)
 
     def __str__(self):
@@ -50,13 +50,13 @@ class Review(models.Model):
         related_name='reviews'
     )
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=['author', 'title_id'],
-                name='unique_author_review'
-            )
-        ]
+    # class Meta:
+    #     constraints = [
+    #         models.UniqueConstraint(
+    #             fields=['author', 'title_id'],
+    #             name='unique_author_review'
+    #         )
+    #     ]
 
     def __str__(self):
         return self.text
