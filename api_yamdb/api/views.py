@@ -31,16 +31,13 @@ class CustomUserViewSet(viewsets.ModelViewSet):
 @ permission_classes([IsAuthenticated])
 def get_personal_account(request):
     user_id = request.user.pk
-    user = CustomUser.objects.get(id=user_id)
+    user = get_object_or_404(CustomUser, id=user_id)
     if request.method == 'PATCH':
-        if request.method == 'PATCH':
-            serializer = GetPersonalAccountSerializers(user, data=request.data,
-                                                       partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
+        serializer = GetPersonalAccountSerializers(user, data=request.data,
+                                                   partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
     serializer = GetPersonalAccountSerializers(user)
     return Response(serializer.data)
 
@@ -49,24 +46,23 @@ def get_personal_account(request):
 @ permission_classes([AllowAny])
 def signup(request):
     serializer = SignUserSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        username = serializer.validated_data.get('username')
-        email = serializer.validated_data.get('email')
-        user = get_object_or_404(CustomUser, username=username)
-        confirmation_code = default_token_generator.make_token(user)
-        serializer.save(email=email, confirmation_code=confirmation_code)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    username = serializer.validated_data.get('username')
+    email = serializer.validated_data.get('email')
+    user = get_object_or_404(CustomUser, username=username)
+    confirmation_code = default_token_generator.make_token(user)
+    serializer.save(email=email, confirmation_code=confirmation_code)
 
-        send_mail(
-            'Тема письма',
-            f'Код подтверждения: {confirmation_code}',
-            'from@example.com',
-            [email],
-            fail_silently=False,
-        )
+    send_mail(
+        'Тема письма',
+        f'Код подтверждения: {confirmation_code}',
+        'from@example.com',
+        [email],
+        fail_silently=False,
+    )
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response(serializer.data)
 
 
 @ api_view(['POST'])
