@@ -1,17 +1,14 @@
-  
-from multiprocessing import AuthenticationError
-from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, status, viewsets
-from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 
-from reviews.models import Category, Comment, Genre, Review, Titles
+from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import CustomUser
 from .serializers import (CategorySerializer, CommentSerializer,
                           CreateUserSerializer, GenreSerializer,
@@ -86,9 +83,10 @@ def token_login(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class CreateListDestroyViewSet(
-    mixins.CreateModelMixin, mixins.ListModelMixin,
-    mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class CreateListDestroyViewSet(mixins.CreateModelMixin,
+                               mixins.ListModelMixin,
+                               mixins.DestroyModelMixin,
+                               viewsets.GenericViewSet):
     pass
 
 
@@ -112,14 +110,12 @@ class CategoryViewSet(CreateListDestroyViewSet):
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
-    queryset = Titles.objects.all()
+    queryset = Title.objects.all()
     serializer_class = TitleDetailSerializer
     permission_classes = (AdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     search_fields = ('name',)
     filterset_class = TitlesFilter
-    # filterset_fields = ('genre__slug', 'category__slug', 'name', 'year')
-
 
     def get_serializer_class(self):
         if self.action == 'retrieve' or self.action == 'list':
@@ -137,10 +133,8 @@ class ReviewsViewSet(viewsets.ModelViewSet):
         return new_queryset
 
     def perform_create(self, serializer):
-        title = get_object_or_404(Titles, pk=self.kwargs.get('title_id'))
-        # if Review.objects.filter(author=self.request.user, title=title).first() == None:
+        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
         serializer.save(author=self.request.user, title=title)
-        # return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, title_id=None, pk=None):
         review = get_object_or_404(Review, id=pk)

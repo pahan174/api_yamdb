@@ -46,5 +46,3 @@ class CustomUser(AbstractUser):
                 name='unique_username_email'
             )
         ]
-
-
