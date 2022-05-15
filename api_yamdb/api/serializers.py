@@ -109,15 +109,6 @@ class TitlesSerializer(serializers.ModelSerializer):
         fields = ('id', 'category', 'genre', 'name', 'year', 'description')
         model = Title
 
-    def validate(self, data):
-        name = data.get('name', None)
-
-        if name is None:
-            raise serializers.ValidationError(
-                'Введите имя.'
-            )
-        return data
-
 
 class TitleDetailSerializer(serializers.ModelSerializer):
     description = serializers.CharField(required=False)

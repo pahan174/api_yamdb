@@ -132,11 +132,9 @@ class ReviewsViewSet(viewsets.ModelViewSet):
         title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
         serializer.save(author=self.request.user, title=title)
 
-    def destroy(self, request, title_id=None, pk=None):
-        review = get_object_or_404(Review, id=pk)
-        self.check_object_permissions(self.request, review)
+    def perform_destroy(self, instance):
+        review = get_object_or_404(Review, id=instance.pk)
         review.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
